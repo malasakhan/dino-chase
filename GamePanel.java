@@ -1,12 +1,14 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.*;
+import java.util.function.*;
 
 class GamePanel extends JPanel implements KeyListener {
-    private int x = 100, y = 100;
-    private final int SIZE = 40;
     private final int SPEED = 5;
+    private String myId = "me";
+    private Map<String, Player> allPlayers = new HashMap<>();
+    private TriConsumer<String, Integer, Integer> networkSender;
 
     public GamePanel() {
         setBackground(Color.WHITE);
@@ -14,23 +16,47 @@ class GamePanel extends JPanel implements KeyListener {
         addKeyListener(this);
     }
 
+    public void setMyId(String id) {
+        this.myId = id;
+        allPlayers.putIfAbsent(id, new Player(id, 100, 100, Color.GREEN));
+    }
+
+    public String getMyId() {
+        return myId;
+    }
+
+    public void setNetworkSender(TriConsumer<String, Integer, Integer> sender) {
+        this.networkSender = sender;
+    }
+
+    public void updateAllPlayers(Map<String, Player> updated) {
+        this.allPlayers = updated;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.GREEN);
-        g.fillOval(x, y, SIZE, SIZE); // Represents the player
+        for (Player p : allPlayers.values()) {
+            g.setColor(p.color());
+            g.fillOval(p.x(), p.y(), p.size(), p.size());
+        }
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        int key = e.getKeyCode();
-        switch (key) {
-            case KeyEvent.VK_W -> y -= SPEED;
-            case KeyEvent.VK_S -> y += SPEED;
-            case KeyEvent.VK_A -> x -= SPEED;
-            case KeyEvent.VK_D -> x += SPEED;
+        Player me = allPlayers.get(myId);
+        if (me == null) return;
+        int dx = 0, dy = 0;
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> dy = -SPEED;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> dy = SPEED;
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT -> dx = -SPEED;
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> dx = SPEED;
         }
+        me.move(dx, dy);
         repaint();
+        if (networkSender != null) networkSender.accept(myId, me.x(), me.y());
     }
 
     @Override public void keyReleased(KeyEvent e) {}

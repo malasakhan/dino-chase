@@ -1,10 +1,9 @@
-
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class Client {
     private static final String SERVER_IP = "localhost";
@@ -21,6 +20,7 @@ public class Client {
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setVisible(true);
+        gamePanel.setNetworkSender((id, x, y) -> out.println(id + "," + x + "," + y));
         gamePanel.requestFocusInWindow();
     }
 
@@ -33,13 +33,27 @@ public class Client {
             String line = in.readLine();
             if (line.startsWith("Enter your username:")) {
                 String name = JOptionPane.showInputDialog(frame, line);
+                gamePanel.setMyId(name);
                 out.println(name);
+            } else if (line.contains(",")) {
+                String[] playerChunks = line.split(";");
+                Map<String, Player> newState = new HashMap<>();
+                for (String chunk : playerChunks) {
+                    String[] parts = chunk.split(",");
+                    if (parts.length == 3) {
+                        String id = parts[0];
+                        int x = Integer.parseInt(parts[1]);
+                        int y = Integer.parseInt(parts[2]);
+                        newState.put(id, new Player(id, x, y, id.equals(gamePanel.getMyId()) ? Color.GREEN : Color.BLUE));
+                    }
+                }
+                gamePanel.updateAllPlayers(newState);
             }
-            // Future: handle game data here
         }
     }
 
     public static void main(String[] args) throws Exception {
         Client client = new Client();
         client.run();
-    }}
+    }
+}
