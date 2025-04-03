@@ -1,0 +1,16 @@
+# Ignore compiled classes
+*.class
+
+# Ignore IntelliJ IDEA files
+.idea/
+*.iml
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore JAR files
+*.jar
