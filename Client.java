@@ -37,24 +37,22 @@ public class Client {
                 out.println(name);
             } else if (line.contains(",")) {
                 String[] playerChunks = line.split(";");
-                Map<String, Player> newState = new HashMap<>();
-                for (String chunk : playerChunks) {
-                    String[] parts = chunk.split(",");
-                    if (parts.length == 5) {
-                        String id = parts[0];
-                        int x = Integer.parseInt(parts[1]);
-                        int y = Integer.parseInt(parts[2]);
-                        boolean isChaser = parts[3].equals("1");
-                        boolean isEliminated = parts[4].equals("1");
-                    
-                        Player p = new Player(id, x, y, id.equals(gamePanel.getMyId()) ? Color.GREEN : Color.BLUE);
-                        p.setChaser(isChaser);
-                        p.setEliminated(isEliminated);
-                        newState.put(id, p);
-                    }
-                    
-                }
-                gamePanel.updateAllPlayers(newState);
+Map<String, Player> newState = new HashMap<>();
+for (String chunk : playerChunks) {
+    String[] parts = chunk.split(",");
+    if (parts.length >= 4) {
+        String id = parts[0];
+        int x = Integer.parseInt(parts[1]);
+        int y = Integer.parseInt(parts[2]);
+        boolean isChaser = parts[3].equals("1");
+
+        Player p = new Player(id, x, y, Color.GREEN);
+        p.setChaser(isChaser);  
+        newState.put(id, p);
+    }
+}
+gamePanel.updateAllPlayers(newState);
+
             }
         }
     }
