@@ -1,15 +1,17 @@
-import java.awt.Color;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
 
 class ClientHandler implements Runnable {
-    private Socket socket;
-    private BufferedReader in;
-    private PrintWriter out;
+    private final Socket socket;
+    private final BufferedReader in;
+    private final PrintWriter out;
     private String username;
-    private List<ClientHandler> clients;
-    private Map<String, Player> playerStates;
+    private final List<ClientHandler> clients;
+    private final Map<String, Player> playerStates;
 
     public ClientHandler(Socket socket, List<ClientHandler> clients, Map<String, Player> playerStates) throws IOException {
         this.socket = socket;
@@ -19,33 +21,37 @@ class ClientHandler implements Runnable {
         this.out = new PrintWriter(socket.getOutputStream(), true);
     }
 
+    public String getUsername() {
+        return username;
+    }
+
     public void run() {
         try {
             out.println("Enter your username:");
             username = in.readLine();
+
             Random rand = new Random();
-            int spawnX = 100 + rand.nextInt(400);
-            int spawnY = 100 + rand.nextInt(300);
-            Player newPlayer = new Player(username, spawnX, spawnY, Color.GREEN);
+            int x = 50 + rand.nextInt(600); // wider range
+            int y = 50 + rand.nextInt(400);
+            Player newPlayer = new Player(username, x, y, Color.BLUE);
+
             playerStates.put(username, newPlayer);
             broadcast("[SERVER] " + username + " has joined the game.");
 
             Server.tryStartGame();
             Server.broadcastPositions();
-            System.out.println("[BROADCAST] Players: " + playerStates.keySet());
-
 
             String input;
             while ((input = in.readLine()) != null) {
-                if (input.contains(",")) { // position update: id,x,y
+                if (input.contains(",")) {
                     String[] parts = input.split(",");
                     if (parts.length >= 3) {
-                        int x = Integer.parseInt(parts[1]);
-                        int y = Integer.parseInt(parts[2]);
+                        int xPos = Integer.parseInt(parts[1]);
+                        int yPos = Integer.parseInt(parts[2]);
                         Player p = playerStates.get(parts[0]);
                         if (p != null) {
-                            p.setX(x);
-                            p.setY(y);
+                            p.setX(xPos);
+                            p.setY(yPos);
                         }
                         Server.checkForTags();
                         Server.broadcastPositions();
@@ -68,6 +74,7 @@ class ClientHandler implements Runnable {
 
     public void send(String msg) {
         out.println(msg);
+        out.flush();
     }
 
     private void broadcast(String message) {
