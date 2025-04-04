@@ -23,15 +23,23 @@ class ClientHandler implements Runnable {
         try {
             out.println("Enter your username:");
             username = in.readLine();
-            Player newPlayer = new Player(username, 100, 100, Color.GREEN);
+            Random rand = new Random();
+            int spawnX = 100 + rand.nextInt(400);
+            int spawnY = 100 + rand.nextInt(300);
+            Player newPlayer = new Player(username, spawnX, spawnY, Color.GREEN);
             playerStates.put(username, newPlayer);
             broadcast("[SERVER] " + username + " has joined the game.");
+
+            Server.tryStartGame();
+            Server.broadcastPositions();
+            System.out.println("[BROADCAST] Players: " + playerStates.keySet());
+
 
             String input;
             while ((input = in.readLine()) != null) {
                 if (input.contains(",")) { // position update: id,x,y
                     String[] parts = input.split(",");
-                    if (parts.length == 3) {
+                    if (parts.length >= 3) {
                         int x = Integer.parseInt(parts[1]);
                         int y = Integer.parseInt(parts[2]);
                         Player p = playerStates.get(parts[0]);
@@ -39,10 +47,9 @@ class ClientHandler implements Runnable {
                             p.setX(x);
                             p.setY(y);
                         }
+                        Server.checkForTags();
                         Server.broadcastPositions();
                     }
-                } else {
-                    broadcast("[" + username + "]: " + input);
                 }
             }
         } catch (IOException e) {

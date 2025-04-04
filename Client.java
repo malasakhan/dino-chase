@@ -7,7 +7,7 @@ import java.util.*;
 
 public class Client {
     private static final String SERVER_IP = "localhost";
-    private static final int PORT = 12345;
+    private static final int PORT = 2005;
 
     private BufferedReader in;
     private PrintWriter out;
@@ -40,12 +40,19 @@ public class Client {
                 Map<String, Player> newState = new HashMap<>();
                 for (String chunk : playerChunks) {
                     String[] parts = chunk.split(",");
-                    if (parts.length == 3) {
+                    if (parts.length == 5) {
                         String id = parts[0];
                         int x = Integer.parseInt(parts[1]);
                         int y = Integer.parseInt(parts[2]);
-                        newState.put(id, new Player(id, x, y, id.equals(gamePanel.getMyId()) ? Color.GREEN : Color.BLUE));
+                        boolean isChaser = parts[3].equals("1");
+                        boolean isEliminated = parts[4].equals("1");
+                    
+                        Player p = new Player(id, x, y, id.equals(gamePanel.getMyId()) ? Color.GREEN : Color.BLUE);
+                        p.setChaser(isChaser);
+                        p.setEliminated(isEliminated);
+                        newState.put(id, p);
                     }
+                    
                 }
                 gamePanel.updateAllPlayers(newState);
             }

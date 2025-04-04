@@ -32,13 +32,17 @@ class GamePanel extends JPanel implements KeyListener {
     public void updateAllPlayers(Map<String, Player> updated) {
         this.allPlayers = updated;
         repaint();
+        System.out.println("My ID: " + myId);
+        System.out.println("Players in map: " + updated.keySet());
+
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         for (Player p : allPlayers.values()) {
-            g.setColor(p.color());
+            if (p.isEliminated()) continue;
+            g.setColor(p.isChaser() ? Color.RED : (p.id().equals(myId) ? Color.GREEN : Color.BLUE));
             g.fillOval(p.x(), p.y(), p.size(), p.size());
         }
     }
@@ -46,7 +50,7 @@ class GamePanel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         Player me = allPlayers.get(myId);
-        if (me == null) return;
+        if (me == null || me.isEliminated()) return;
         int dx = 0, dy = 0;
         switch (e.getKeyCode()) {
             case KeyEvent.VK_W, KeyEvent.VK_UP -> dy = -SPEED;
