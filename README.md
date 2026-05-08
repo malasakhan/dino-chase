@@ -29,3 +29,9 @@ dino-chase/
 ├── Server.java
 ├── TriConsumer.java
 └── .gitignore
+## How to Run
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/malasakhan/dino-chase.git
